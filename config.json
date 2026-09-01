@@ -1,0 +1,17 @@
+{
+  "whisper_model": "small",
+  "fuzzy_threshold": 75,
+  "buffer_seconds": 6,
+  "phrases": [
+    {
+      "id": "no_way",
+      "name": "No Way",
+      "phrase": "no way"
+    },
+    {
+      "id": "bro_trust",
+      "name": "Bro Trust",
+      "phrase": "bro trust"
+    }
+  ]
+}
