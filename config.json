@@ -20,6 +20,11 @@
 		"id": "hear_me_out",
 		"name": "Hear Me Out",
 		"phrase": "hear me out"
+	},
+	{
+		"id": "hashtag",
+		"name": "Hashtag",
+		"phrase": "hashtag"
 	}
   ]
 }
