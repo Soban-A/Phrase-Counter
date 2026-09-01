@@ -57,7 +57,6 @@ Listens to your system audio (and optionally your microphone) in real time, tran
    | `capture_mic` | `true` to mix your microphone in alongside system audio, `false` for system audio only |
    | `open_dashboard` | `true` to automatically open `dashboard_url` in your browser on startup |
    | `dashboard_url` | The URL of your deployed dashboard (e.g. your GitHub Pages link) — change this if you fork the repo and deploy your own copy |
-   | `silence_threshold` | Minimum RMS volume (0–1) required before a chunk is even sent to Whisper — filters out the "You" / "Thank you." hallucinations Whisper produces on silence. Raise it if that's still happening; lower it if quiet speech is getting skipped |
    | `phrases` | List of `{ id, name, phrase }` entries to track — `id` must be unique and stable (it's the database key) |
 
 ## Running

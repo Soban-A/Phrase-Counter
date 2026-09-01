@@ -5,7 +5,6 @@
   "capture_mic": true,
   "open_dashboard": true,
   "dashboard_url": "https://soban-a.github.io/Phrase-Counter/",
-  "silence_threshold": 0.000001,
   "phrases": [
     {
       "id": "mic_check",

@@ -29,10 +29,7 @@ def main():
     db = SupabaseClient(url, key)
     db.sync_phrases(config["phrases"])
 
-    transcriber = Transcriber(
-        model_size=config.get("whisper_model", "small"),
-        silence_threshold=config.get("silence_threshold", 0.01),
-    )
+    transcriber = Transcriber(model_size=config.get("whisper_model", "small"))
     matcher = PhraseMatcher(config["phrases"], threshold=config.get("fuzzy_threshold", 75))
 
     buffer_seconds = config.get("buffer_seconds", 6)
