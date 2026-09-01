@@ -58,7 +58,9 @@ def main():
 
                     transcript = transcriber.transcribe(audio_data)
                     if transcript.strip():
-                        print(f"[{time.strftime('%H:%M:%S')}] {transcript.strip()}")
+                        text = transcript.strip()
+                        print(f"[{time.strftime('%H:%M:%S')}] {text}")
+                        db.update_transcript(text)
                         for phrase_id, phrase_name in matcher.find_matches(transcript):
                             count = db.increment(phrase_id)
                             print(f'  >>> "{phrase_name}" detected! Total: {count}\n')

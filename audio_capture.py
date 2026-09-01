@@ -1,4 +1,5 @@
 import queue
+import time
 from math import gcd
 
 import numpy as np
@@ -24,6 +25,7 @@ class AudioCapture:
         self.capture_mic = capture_mic
         self._system_queue = queue.Queue()
         self._mic_queue = queue.Queue()
+        self._mic_leftover = np.zeros(0, dtype=np.float32)
         self._pa = None
         self._system_stream = None
         self._mic_stream = None
@@ -105,6 +107,29 @@ class AudioCapture:
         if self._pa:
             self._pa.terminate()
 
+    def _collect_mic(self, min_samples, max_wait):
+        """Accumulate mic audio until at least min_samples are available or max_wait
+        elapses. The mic and system streams run on independent hardware clocks, so a
+        single non-blocking check can miss a mic chunk that lands a few ms late on
+        every call — waiting here avoids silently dropping mic audio."""
+        buf = self._mic_leftover
+        deadline = time.monotonic() + max_wait
+        while len(buf) < min_samples:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            try:
+                buf = np.concatenate([buf, self._mic_queue.get(timeout=remaining)])
+            except queue.Empty:
+                break
+
+        if len(buf) == 0:
+            self._mic_leftover = buf
+            return None
+
+        self._mic_leftover = buf[min_samples:]
+        return buf[:min_samples]
+
     def get_chunk(self, timeout=1.0):
         """Returns one mixed, mono, 16kHz float32 chunk, or None on timeout."""
         try:
@@ -115,9 +140,8 @@ class AudioCapture:
         if not self.capture_mic:
             return system_audio
 
-        try:
-            mic_audio = self._mic_queue.get_nowait()
-        except queue.Empty:
+        mic_audio = self._collect_mic(len(system_audio), max_wait=self.chunk_duration * 2)
+        if mic_audio is None:
             return system_audio
 
         n = min(len(system_audio), len(mic_audio))

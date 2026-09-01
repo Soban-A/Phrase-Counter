@@ -30,10 +30,10 @@ Listens to your system audio (and optionally your microphone) in real time, tran
 
    ```
    SUPABASE_URL=https://your-project-id.supabase.co
-   SUPABASE_KEY=your-publishable-key-here
+   SUPABASE_KEY=your-secret-key-here
    ```
 
-   Get both from Supabase → Project Settings → API. Use the **publishable key** (`sb_publishable_...`), not the secret key — this script only reads/writes the `phrases` table, so it doesn't need admin/RLS-bypass access. `.env` is git-ignored; never commit real credentials into `.env.example`.
+   Get both from Supabase → Project Settings → API. Use the **secret key** (`sb_secret_...`) here — the dashboard (`web/index.html`) is meant to be shared publicly and is read-only via a Row Level Security policy, so `main.py` needs the secret key to bypass RLS and actually write counts. `.env` is git-ignored; never commit real credentials into `.env.example` or `web/index.html`.
 
 4. **Configure phrases and audio sources** in [config.json](config.json):
 
