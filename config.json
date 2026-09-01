@@ -2,6 +2,7 @@
   "whisper_model": "small",
   "fuzzy_threshold": 75,
   "buffer_seconds": 6,
+  "capture_mic": true,
   "phrases": [
     {
       "id": "no_way",

@@ -1,11 +1,9 @@
 import json
 import os
 import time
-from math import gcd
 
 import numpy as np
 from dotenv import load_dotenv
-from scipy.signal import resample_poly
 
 from audio_capture import AudioCapture
 from transcriber import Transcriber
@@ -16,15 +14,6 @@ from supabase_client import SupabaseClient
 def load_config():
     with open("config.json") as f:
         return json.load(f)
-
-
-def to_mono_16k(audio: np.ndarray, from_rate: int, channels: int) -> np.ndarray:
-    if channels > 1:
-        audio = audio.reshape(-1, channels).mean(axis=1)
-    if from_rate != 16000:
-        g = gcd(from_rate, 16000)
-        audio = resample_poly(audio, 16000 // g, from_rate // g).astype(np.float32)
-    return audio
 
 
 def main():
@@ -45,11 +34,14 @@ def main():
     buffer_seconds = config.get("buffer_seconds", 6)
     audio_buffer = []
 
+    capture_mic = config.get("capture_mic", True)
+
     print("Phrase Counter running!")
     print(f"Tracking: {', '.join(p['name'] for p in config['phrases'])}")
-    print("Listening to system audio... (Ctrl+C to stop)\n")
+    source_desc = "system audio + microphone" if capture_mic else "system audio"
+    print(f"Listening to {source_desc}... (Ctrl+C to stop)\n")
 
-    with AudioCapture() as capture:
+    with AudioCapture(capture_mic=capture_mic) as capture:
         target_samples = 16000 * buffer_seconds
 
         try:
@@ -58,7 +50,7 @@ def main():
                 if chunk is None:
                     continue
 
-                audio_buffer.append(to_mono_16k(chunk, capture._device_rate, capture._channels))
+                audio_buffer.append(chunk)
 
                 if sum(len(c) for c in audio_buffer) >= target_samples:
                     audio_data = np.concatenate(audio_buffer)
