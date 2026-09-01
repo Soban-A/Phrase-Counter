@@ -79,7 +79,6 @@ def main():
                         timestamp = time.strftime('%H:%M:%S')
                         for line in lines:
                             print(f"[{timestamp}] {line}")
-                        db.update_transcript("\n".join(lines))
 
                     for source, text in (("System", system_text), ("Mic", mic_text)):
                         for phrase_id, phrase_name in matcher.find_matches(text):

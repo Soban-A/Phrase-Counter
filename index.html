@@ -117,32 +117,6 @@
       margin-top: 60px;
       font-size: 0.9rem;
     }
-
-    #transcript {
-      width: 100%;
-      max-width: 900px;
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 32px;
-      min-height: 1.4em;
-      font-size: 0.95rem;
-      color: #9ca3af;
-      font-style: italic;
-      white-space: pre-line;
-    }
-
-    #transcript .label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #555;
-      font-style: normal;
-      margin-bottom: 6px;
-    }
   </style>
 </head>
 <body>
@@ -151,7 +125,6 @@
     <p>Live — updates automatically</p>
   </header>
 
-  <div id="transcript"><span class="label">Live transcript</span><span id="transcript-text">Waiting for audio...</span></div>
   <div id="grid"><p class="loading">Loading...</p></div>
   <div id="status"></div>
 
@@ -167,11 +140,6 @@
 
     const grid = document.getElementById('grid');
     const statusEl = document.getElementById('status');
-    const transcriptTextEl = document.getElementById('transcript-text');
-
-    function renderTranscript(text) {
-      transcriptTextEl.textContent = text || 'Waiting for audio...';
-    }
 
     function timeAgo(isoString) {
       if (!isoString) return 'never';
@@ -212,10 +180,6 @@
 
       grid.innerHTML = data.map(renderCard).join('');
 
-      const { data: transcriptRow } = await client
-        .from('live_transcript').select('text').eq('id', 'current').single();
-      if (transcriptRow) renderTranscript(transcriptRow.text);
-
       // Keep last-seen timestamps fresh every 30s
       setInterval(() => {
         document.querySelectorAll('.card').forEach(card => {
@@ -228,8 +192,6 @@
       client.channel('phrase-updates')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'phrases' },
           payload => bumpCard(payload.new.id, payload.new))
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_transcript' },
-          payload => renderTranscript(payload.new.text))
         .subscribe(status => {
           if (status === 'SUBSCRIBED') {
             statusEl.innerHTML = '<span></span>Live';

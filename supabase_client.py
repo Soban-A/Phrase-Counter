@@ -20,9 +20,3 @@ class SupabaseClient:
     def increment(self, phrase_id: str) -> int:
         result = self.client.rpc("increment_phrase_count", {"phrase_id": phrase_id}).execute()
         return result.data
-
-    def update_transcript(self, text: str) -> None:
-        self.client.table("live_transcript").upsert(
-            {"id": "current", "text": text},
-            on_conflict="id",
-        ).execute()

@@ -43,28 +43,3 @@ END $$;
 ALTER TABLE phrases ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read access" ON phrases;
 CREATE POLICY "Public read access" ON phrases FOR SELECT USING (true);
-
--- 5. Live transcript — lets the speaker see what's being transcribed in
--- real time, to manually spot-check accuracy.
-CREATE TABLE IF NOT EXISTS live_transcript (
-    id   TEXT PRIMARY KEY DEFAULT 'current',
-    text TEXT NOT NULL DEFAULT ''
-);
-
-INSERT INTO live_transcript (id, text)
-VALUES ('current', '')
-ON CONFLICT (id) DO NOTHING;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_publication_tables
-        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'live_transcript'
-    ) THEN
-        ALTER PUBLICATION supabase_realtime ADD TABLE live_transcript;
-    END IF;
-END $$;
-
-ALTER TABLE live_transcript ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access" ON live_transcript;
-CREATE POLICY "Public read access" ON live_transcript FOR SELECT USING (true);
