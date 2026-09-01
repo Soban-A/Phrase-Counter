@@ -48,7 +48,7 @@ It Listens to your system audio (and optionally your microphone) in real time, t
      "buffer_seconds": 6,
      "capture_mic": true,
      "phrases": [
-       { "id": "no_way", "name": "No Way", "phrase": "no way" }
+       { "id": "no_way", "name": "No Way", "phrase": "no way", "description": "Said in disbelief" }
      ]
    }
    ```
@@ -61,7 +61,7 @@ It Listens to your system audio (and optionally your microphone) in real time, t
    | `capture_mic` | `true` to mix your microphone in alongside system audio, `false` for system audio only |
    | `open_dashboard` | `true` to automatically open `dashboard_url` in your browser on startup |
    | `dashboard_url` | The URL of your deployed dashboard (e.g. your GitHub Pages link) — change this if you fork the repo and deploy your own copy |
-   | `phrases` | List of `{ id, name, phrase }` entries to track — `id` must be unique and stable (it's the database key) |
+   | `phrases` | List of `{ id, name, phrase, description }` entries to track — `id` must be unique and stable (it's the database key); `description` shows on the dashboard card instead of repeating the trigger phrase |
 
 ## Running
 

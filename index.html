@@ -80,10 +80,9 @@
       margin-bottom: 8px;
     }
 
-    .card .phrase-text {
+    .card .description {
       font-size: 0.78rem;
       color: #9ca3af;
-      font-style: italic;
       margin-bottom: 12px;
     }
 
@@ -188,7 +187,7 @@
         <div class="card" id="${cardId(p.id)}" data-count="${p.count}">
           <div class="count">${p.count}</div>
           <div class="name">${p.name}</div>
-          <div class="phrase-text">"${p.phrase}"</div>
+          <div class="description">${p.description || ''}</div>
           <div class="last-seen">Last: ${timeAgo(p.last_detected)}</div>
         </div>`;
     }

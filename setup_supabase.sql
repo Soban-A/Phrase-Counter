@@ -5,9 +5,13 @@ CREATE TABLE IF NOT EXISTS phrases (
     id           TEXT PRIMARY KEY,
     name         TEXT NOT NULL,
     phrase       TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
     count        INTEGER DEFAULT 0,
     last_detected TIMESTAMPTZ
 );
+
+-- Safe to re-run against a table created before `description` existed.
+ALTER TABLE phrases ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
 
 -- 2. Atomic increment function (avoids race conditions)
 CREATE OR REPLACE FUNCTION increment_phrase_count(phrase_id TEXT)

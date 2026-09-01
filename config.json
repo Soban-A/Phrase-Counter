@@ -9,22 +9,26 @@
     {
       "id": "mic_check",
       "name": "Mic Check",
-      "phrase": "mic check"
+      "phrase": "mic check",
+      "description": "Said to make sure the mic's actually working — the phrase that started this whole project"
     },
     {
       "id": "bro_trust",
       "name": "Bro Trust",
-      "phrase": "bro trust"
+      "phrase": "bro trust",
+      "description": "The universal seal of trust between friends"
     },
 	{
 		"id": "hear_me_out",
 		"name": "Hear Me Out",
-		"phrase": "hear me out"
+		"phrase": "hear me out",
+		"description": "Said right before a questionable idea"
 	},
 	{
 		"id": "hashtag",
 		"name": "Hashtag",
-		"phrase": "hashtag"
+		"phrase": "hashtag",
+		"description": "Said out loud like it's actually a hashtag"
 	}
   ]
 }

@@ -10,7 +10,12 @@ class SupabaseClient:
         preserves counts — and deletes any phrase no longer present in config."""
         for p in phrases:
             self.client.table("phrases").upsert(
-                {"id": p["id"], "name": p["name"], "phrase": p["phrase"]},
+                {
+                    "id": p["id"],
+                    "name": p["name"],
+                    "phrase": p["phrase"],
+                    "description": p.get("description", ""),
+                },
                 on_conflict="id",
             ).execute()
 
