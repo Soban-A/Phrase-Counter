@@ -11,8 +11,6 @@ from transcriber import Transcriber
 from phrase_matcher import PhraseMatcher
 from supabase_client import SupabaseClient
 
-DASHBOARD_URL = "https://soban-a.github.io/Phrase-Counter/"
-
 
 def load_config():
     with open("config.json") as f:
@@ -48,8 +46,9 @@ def main():
     source_desc = "system audio + microphone" if capture_mic else "system audio"
     print(f"Listening to {source_desc}... (Ctrl+C to stop)\n")
 
-    if config.get("open_dashboard", True):
-        webbrowser.open(DASHBOARD_URL)
+    dashboard_url = config.get("dashboard_url")
+    if config.get("open_dashboard", True) and dashboard_url:
+        webbrowser.open(dashboard_url)
 
     with AudioCapture(capture_mic=capture_mic) as capture:
         target_samples = 16000 * buffer_seconds
