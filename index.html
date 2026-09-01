@@ -50,11 +50,12 @@
       border-radius: 16px;
       padding: 32px 24px;
       text-align: center;
-      transition: border-color 0.2s;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
 
     .card.bump {
-      border-color: #7c3aed;
+      border-color: #7c3aed !important;
+      box-shadow: none !important;
       animation: pulse 0.4s ease-out;
     }
 
@@ -141,6 +142,30 @@
     const grid = document.getElementById('grid');
     const statusEl = document.getElementById('status');
 
+    // Sequential heat ramp (blue, dark->light), steps 700->100 from the design
+    // system's validated palette. Coldest (0 occurrences, relative to the
+    // current max) sits near the card surface and recedes; hottest (the
+    // most-said phrase) is brightest.
+    const HEAT_RAMP = [
+      '#0d366b', '#104281', '#184f95', '#1c5cab', '#256abf', '#2a78d6',
+      '#3987e5', '#5598e7', '#6da7ec', '#86b6ef', '#9ec5f4', '#b7d3f6', '#cde2fb',
+    ];
+
+    function heatColor(ratio) {
+      return HEAT_RAMP[Math.round(ratio * (HEAT_RAMP.length - 1))];
+    }
+
+    function applyHeatColors() {
+      const cards = Array.from(grid.querySelectorAll('.card'));
+      const maxCount = Math.max(0, ...cards.map(c => Number(c.dataset.count)));
+      cards.forEach(card => {
+        const ratio = maxCount > 0 ? Number(card.dataset.count) / maxCount : 0;
+        const color = heatColor(ratio);
+        card.style.borderColor = color;
+        card.style.boxShadow = ratio > 0 ? `0 0 ${Math.round(ratio * 24)}px ${color}66` : 'none';
+      });
+    }
+
     function timeAgo(isoString) {
       if (!isoString) return 'never';
       const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
@@ -176,7 +201,9 @@
       el.classList.remove('bump');
       void el.offsetWidth; // force reflow to restart animation
       el.classList.add('bump');
+      el.addEventListener('animationend', () => el.classList.remove('bump'), { once: true });
       sortGrid();
+      applyHeatColors();
     }
 
     async function init() {
@@ -187,6 +214,7 @@
       }
 
       grid.innerHTML = data.map(renderCard).join('');
+      applyHeatColors();
 
       // Keep last-seen timestamps fresh every 30s
       setInterval(() => {
