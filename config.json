@@ -15,6 +15,11 @@
       "id": "bro_trust",
       "name": "Bro Trust",
       "phrase": "bro trust"
-    }
+    },
+	{
+		"id": "hear_me_out",
+		"name": "Hear Me Out",
+		"phrase": "hear me out"
+	}
   ]
 }
