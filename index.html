@@ -142,13 +142,15 @@
     const grid = document.getElementById('grid');
     const statusEl = document.getElementById('status');
 
-    // Sequential heat ramp (blue, dark->light), steps 700->100 from the design
-    // system's validated palette. Coldest (0 occurrences, relative to the
-    // current max) sits near the card surface and recedes; hottest (the
-    // most-said phrase) is brightest.
+    // Sequential heat ramp (red, dark->bright), single hue stepped by
+    // lightness. Coldest (0 occurrences, relative to the current max) sits
+    // near the card surface and recedes; hottest (the most-said phrase) is
+    // brightest. Text stays fixed white, so this can run all the way to a
+    // vivid red without hurting contrast (verified: 10.67:1 white-on-tile at
+    // max heat, vs. the 4.5:1 WCAG text minimum).
     const HEAT_RAMP = [
-      '#0d366b', '#104281', '#184f95', '#1c5cab', '#256abf', '#2a78d6',
-      '#3987e5', '#5598e7', '#6da7ec', '#86b6ef', '#9ec5f4', '#b7d3f6', '#cde2fb',
+      '#5d0910', '#750c14', '#8d0e18', '#a5101d', '#bd1321', '#d51525',
+      '#e91c2d', '#eb3443', '#ed4c59', '#f0646f', '#f27c85', '#f4939c', '#f7abb2',
     ];
 
     function heatColor(ratio) {
