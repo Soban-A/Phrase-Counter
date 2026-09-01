@@ -4,7 +4,7 @@ This project started as a joke because every time my best friend Hamza would joi
 
 It Listens to your system audio (and optionally your microphone) in real time, transcribes it locally with Whisper, and counts how many times configured phrases get said, with counts synced live to a Supabase-backed web dashboard. 
 
-### It's important to note that your audio is not being recorded or stored anywhere. The program listens to your audio for timed increments (6 seconds by default) and sifts through those 6 seconds for the desired phrase
+*** It's important to note that your audio is not being recorded or stored anywhere. The program listens to your audio for timed increments (6 seconds by default) and sifts through those 6 seconds for the desired phrase ***
 
 ## File Explanation
 
