@@ -146,8 +146,12 @@
     // tracked) — so with 10 phrases the steps are 0, 10, 20, ... 90; with 5
     // phrases, 0, 20, 40, 60, 80. The lowest-count phrase always lands at 0%
     // (pure gray, no red at all); the highest-count phrase gets the last step
-    // below 100%. Rank is over *distinct* counts, not phrases — phrases tied
-    // on count share the same rank, and therefore the same color.
+    // below 100%. Ties share a rank (standard "competition ranking" — a
+    // phrase's rank is the index of the *first* occurrence of its count in
+    // the full sorted list), so tied phrases get the same color, and — unlike
+    // dense ranking — every phrase with a strictly higher count keeps the
+    // exact saturation it would have with no tie at all; only the tied group
+    // and whatever's below it are affected.
     const HEAT_HUE = 358;
     const HEAT_LIGHTNESS = 45;
 
@@ -155,11 +159,14 @@
       const cards = Array.from(grid.querySelectorAll('.card'));
       const step = cards.length > 0 ? 100 / cards.length : 0;
 
-      const distinctCounts = [...new Set(cards.map(c => Number(c.dataset.count)))].sort((a, b) => a - b);
-      const rankByCount = new Map(distinctCounts.map((count, rank) => [count, rank]));
+      const sortedCounts = cards.map(c => Number(c.dataset.count)).sort((a, b) => a - b);
+      const firstIndexByCount = new Map();
+      sortedCounts.forEach((count, i) => {
+        if (!firstIndexByCount.has(count)) firstIndexByCount.set(count, i);
+      });
 
       cards.forEach(card => {
-        const rank = rankByCount.get(Number(card.dataset.count));
+        const rank = firstIndexByCount.get(Number(card.dataset.count));
         const saturation = Math.round(rank * step);
         const color = `hsl(${HEAT_HUE} ${saturation}% ${HEAT_LIGHTNESS}%)`;
         const glowColor = `hsl(${HEAT_HUE} ${saturation}% ${HEAT_LIGHTNESS}% / 0.4)`;
