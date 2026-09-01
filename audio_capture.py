@@ -18,7 +18,8 @@ def _to_mono_16k(audio: np.ndarray, rate: int, channels: int) -> np.ndarray:
 
 class AudioCapture:
     """Captures system audio (WASAPI loopback) and, optionally, the default
-    microphone, mixing both into a single mono 16kHz stream."""
+    microphone as two separate mono 16kHz streams, so callers can tell which
+    source any given piece of audio came from."""
 
     def __init__(self, chunk_duration=0.5, capture_mic=True):
         self.chunk_duration = chunk_duration
@@ -117,8 +118,9 @@ class AudioCapture:
         return np.concatenate(chunks) if chunks else np.zeros(0, dtype=np.float32)
 
     def get_chunk(self, timeout=1.0, poll_interval=0.05):
-        """Returns one mixed, mono, 16kHz float32 chunk, or None if neither source
-        produced anything within `timeout`.
+        """Returns (system_audio, mic_audio) as two mono 16kHz float32 arrays of
+        equal length, kept separate so the caller can tell which source produced
+        what. Returns None if neither source produced anything within `timeout`.
 
         System audio and the mic are drained independently — WASAPI loopback can
         stop delivering callbacks entirely when system output is truly silent (e.g.
@@ -135,16 +137,13 @@ class AudioCapture:
         else:
             return None
 
-        if not self.capture_mic:
-            return system_audio if len(system_audio) else None
-
         n = max(len(system_audio), len(mic_audio))
         if len(system_audio) < n:
             system_audio = np.pad(system_audio, (0, n - len(system_audio)))
         if len(mic_audio) < n:
             mic_audio = np.pad(mic_audio, (0, n - len(mic_audio)))
 
-        return np.clip(system_audio + mic_audio, -1.0, 1.0)
+        return system_audio, mic_audio
 
     def __enter__(self):
         return self.start()

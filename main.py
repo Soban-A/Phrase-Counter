@@ -31,11 +31,15 @@ def main():
     db = SupabaseClient(url, key)
     db.sync_phrases(config["phrases"])
 
-    transcriber = Transcriber(model_size=config.get("whisper_model", "small"))
+    transcriber = Transcriber(
+        model_size=config.get("whisper_model", "small"),
+        silence_threshold=config.get("silence_threshold", 0.01),
+    )
     matcher = PhraseMatcher(config["phrases"], threshold=config.get("fuzzy_threshold", 75))
 
     buffer_seconds = config.get("buffer_seconds", 6)
-    audio_buffer = []
+    system_buffer = []
+    mic_buffer = []
 
     capture_mic = config.get("capture_mic", True)
 
@@ -56,20 +60,35 @@ def main():
                 if chunk is None:
                     continue
 
-                audio_buffer.append(chunk)
+                system_chunk, mic_chunk = chunk
+                system_buffer.append(system_chunk)
+                mic_buffer.append(mic_chunk)
 
-                if sum(len(c) for c in audio_buffer) >= target_samples:
-                    audio_data = np.concatenate(audio_buffer)
-                    audio_buffer.clear()
+                if sum(len(c) for c in system_buffer) >= target_samples:
+                    system_data = np.concatenate(system_buffer)
+                    mic_data = np.concatenate(mic_buffer)
+                    system_buffer.clear()
+                    mic_buffer.clear()
 
-                    transcript = transcriber.transcribe(audio_data)
-                    if transcript.strip():
-                        text = transcript.strip()
-                        print(f"[{time.strftime('%H:%M:%S')}] {text}")
-                        db.update_transcript(text)
-                        for phrase_id, phrase_name in matcher.find_matches(transcript):
+                    system_text = transcriber.transcribe(system_data).strip()
+                    mic_text = transcriber.transcribe(mic_data).strip() if capture_mic else ""
+
+                    lines = []
+                    if system_text:
+                        lines.append(f"(System) {system_text}")
+                    if mic_text:
+                        lines.append(f"(Mic) {mic_text}")
+
+                    if lines:
+                        timestamp = time.strftime('%H:%M:%S')
+                        for line in lines:
+                            print(f"[{timestamp}] {line}")
+                        db.update_transcript("\n".join(lines))
+
+                    for source, text in (("System", system_text), ("Mic", mic_text)):
+                        for phrase_id, phrase_name in matcher.find_matches(text):
                             count = db.increment(phrase_id)
-                            print(f'  >>> "{phrase_name}" detected! Total: {count}\n')
+                            print(f'  >>> "{phrase_name}" detected via {source}! Total: {count}\n')
 
         except KeyboardInterrupt:
             print("\nStopped.")

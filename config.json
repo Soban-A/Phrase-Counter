@@ -4,6 +4,7 @@
   "buffer_seconds": 3,
   "capture_mic": true,
   "open_dashboard": true,
+  "silence_threshold": 0.01,
   "phrases": [
     {
       "id": "mic_check",
