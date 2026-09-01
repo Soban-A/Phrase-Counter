@@ -142,34 +142,34 @@
     const grid = document.getElementById('grid');
     const statusEl = document.getElementById('status');
 
-    // Sequential heat ramp (red), lightness AND saturation both increase
-    // together — a dark-red->pale-pink ramp reads as *less* red at the top
-    // (desaturating), so this instead goes near-invisible dark at the low
-    // end toward a vivid, saturated red at the high end. Text stays fixed
-    // white, so this can run all the way to a vivid red without hurting
-    // contrast (verified: 14.63:1 white-on-tile at max heat, vs. the 4.5:1
-    // WCAG text minimum).
-    const HEAT_RAMP = [
-      '#221111', '#301515', '#3f1719', '#4f191b', '#601b1d', '#721b1d',
-      '#841a1d', '#98181c', '#ad151a', '#c21117', '#d90c13', '#f1070e', '#ff0a12',
-    ];
-
-    function heatColor(ratio) {
-      return HEAT_RAMP[Math.round(ratio * (HEAT_RAMP.length - 1))];
-    }
+    // All tiles are the same red hue. Saturation is rank-based, not magnitude-
+    // based: sort phrases by count ascending, and each phrase's saturation is
+    // its rank * (100 / number of phrases tracked) — so with 10 phrases the
+    // steps are 0, 10, 20, ... 90; with 5 phrases, 0, 20, 40, 60, 80. The
+    // lowest-count phrase always lands at 0% (pure gray, no red at all); the
+    // highest-count phrase gets the last step below 100%. Ties (equal counts)
+    // break on id for a stable, non-flickering rank.
+    const HEAT_HUE = 358;
+    const HEAT_LIGHTNESS = 45;
 
     function applyHeatColors() {
       const cards = Array.from(grid.querySelectorAll('.card'));
-      const maxCount = Math.max(0, ...cards.map(c => Number(c.dataset.count)));
-      cards.forEach(card => {
-        const ratio = maxCount > 0 ? Number(card.dataset.count) / maxCount : 0;
-        const color = heatColor(ratio);
+      const step = cards.length > 0 ? 100 / cards.length : 0;
+
+      const ranked = [...cards].sort((a, b) => {
+        const diff = Number(a.dataset.count) - Number(b.dataset.count);
+        return diff !== 0 ? diff : a.id.localeCompare(b.id);
+      });
+
+      ranked.forEach((card, rank) => {
+        const saturation = Math.round(rank * step);
+        const color = `hsl(${HEAT_HUE} ${saturation}% ${HEAT_LIGHTNESS}%)`;
+        const glowColor = `hsl(${HEAT_HUE} ${saturation}% ${HEAT_LIGHTNESS}% / 0.4)`;
         card.style.borderColor = color;
-        card.style.boxShadow = ratio > 0 ? `0 0 ${Math.round(ratio * 24)}px ${color}66` : 'none';
+        card.style.boxShadow = saturation > 0 ? `0 0 ${Math.round((saturation / 100) * 24)}px ${glowColor}` : 'none';
         // Translucent tint over the card's dark base, not an opaque fill —
-        // keeps white text readable at every heat level without needing
-        // per-card text-color logic.
-        card.style.backgroundColor = `color-mix(in srgb, ${color} ${Math.round(ratio * 22)}%, #1a1a1a)`;
+        // keeps white text readable at every saturation level.
+        card.style.backgroundColor = `color-mix(in srgb, ${color} ${Math.round((saturation / 100) * 22)}%, #1a1a1a)`;
       });
     }
 
