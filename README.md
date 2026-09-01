@@ -55,6 +55,7 @@ Listens to your system audio (and optionally your microphone) in real time, tran
    | `fuzzy_threshold` | Minimum fuzzy-match score (0–100) to count a phrase as detected |
    | `buffer_seconds` | How much audio to accumulate before each transcription pass |
    | `capture_mic` | `true` to mix your microphone in alongside system audio, `false` for system audio only |
+   | `open_dashboard` | `true` to automatically open the GitHub Pages dashboard in your browser on startup |
    | `phrases` | List of `{ id, name, phrase }` entries to track — `id` must be unique and stable (it's the database key) |
 
 ## Running

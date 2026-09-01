@@ -1,13 +1,14 @@
 {
   "whisper_model": "small",
   "fuzzy_threshold": 75,
-  "buffer_seconds": 6,
+  "buffer_seconds": 3,
   "capture_mic": true,
+  "open_dashboard": true,
   "phrases": [
     {
-      "id": "no_way",
-      "name": "No Way",
-      "phrase": "no way"
+      "id": "mic_check",
+      "name": "Mic Check",
+      "phrase": "mic check"
     },
     {
       "id": "bro_trust",
