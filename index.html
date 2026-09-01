@@ -143,78 +143,6 @@
       font-style: normal;
       margin-bottom: 6px;
     }
-
-    #levels {
-      width: 100%;
-      max-width: 900px;
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 32px;
-    }
-
-    #levels .label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #555;
-      margin-bottom: 12px;
-    }
-
-    .level-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .level-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .level-name {
-      width: 56px;
-      flex-shrink: 0;
-      font-size: 0.8rem;
-      color: #9ca3af;
-    }
-
-    .level-bar {
-      position: relative;
-      flex: 1;
-      height: 10px;
-      background: #0d0d0d;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    .level-fill {
-      height: 100%;
-      width: 0%;
-      background: #a78bfa;
-      transition: width 0.15s linear;
-    }
-
-    .level-threshold {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0%;
-      width: 2px;
-      background: #f87171;
-    }
-
-    .level-value {
-      width: 50px;
-      flex-shrink: 0;
-      text-align: right;
-      font-size: 0.78rem;
-      color: #666;
-      font-variant-numeric: tabular-nums;
-    }
   </style>
 </head>
 <body>
@@ -224,21 +152,6 @@
   </header>
 
   <div id="transcript"><span class="label">Live transcript</span><span id="transcript-text">Waiting for audio...</span></div>
-
-  <div id="levels">
-    <span class="label">Volume &mdash; red line is the reference threshold</span>
-    <div class="level-row">
-      <span class="level-name">System</span>
-      <div class="level-bar"><div class="level-fill" id="level-system-fill"></div><div class="level-threshold" id="level-system-threshold"></div></div>
-      <span class="level-value" id="level-system-value">0.000</span>
-    </div>
-    <div class="level-row">
-      <span class="level-name">Mic</span>
-      <div class="level-bar"><div class="level-fill" id="level-mic-fill"></div><div class="level-threshold" id="level-mic-threshold"></div></div>
-      <span class="level-value" id="level-mic-value">0.000</span>
-    </div>
-  </div>
-
   <div id="grid"><p class="loading">Loading...</p></div>
   <div id="status"></div>
 
@@ -258,23 +171,6 @@
 
     function renderTranscript(text) {
       transcriptTextEl.textContent = text || 'Waiting for audio...';
-    }
-
-    // Matches METER_MAX in main.py so the bars use the same scale as the console meter.
-    const METER_MAX = 0.15;
-
-    function setLevelBar(source, value, threshold) {
-      const pct = Math.min(value / METER_MAX, 1) * 100;
-      document.getElementById(`level-${source}-fill`).style.width = pct + '%';
-      document.getElementById(`level-${source}-value`).textContent = value.toFixed(3);
-      const thresholdPct = Math.min(threshold / METER_MAX, 1) * 100;
-      document.getElementById(`level-${source}-threshold`).style.left = thresholdPct + '%';
-    }
-
-    function renderLevels(row) {
-      if (!row) return;
-      setLevelBar('system', row.system_volume, row.threshold);
-      setLevelBar('mic', row.mic_volume, row.threshold);
     }
 
     function timeAgo(isoString) {
@@ -320,10 +216,6 @@
         .from('live_transcript').select('text').eq('id', 'current').single();
       if (transcriptRow) renderTranscript(transcriptRow.text);
 
-      const { data: levelsRow } = await client
-        .from('live_levels').select('*').eq('id', 'current').single();
-      if (levelsRow) renderLevels(levelsRow);
-
       // Keep last-seen timestamps fresh every 30s
       setInterval(() => {
         document.querySelectorAll('.card').forEach(card => {
@@ -338,8 +230,6 @@
           payload => bumpCard(payload.new.id, payload.new))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_transcript' },
           payload => renderTranscript(payload.new.text))
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_levels' },
-          payload => renderLevels(payload.new))
         .subscribe(status => {
           if (status === 'SUBSCRIBED') {
             statusEl.innerHTML = '<span></span>Live';

@@ -11,23 +11,10 @@ from transcriber import Transcriber
 from phrase_matcher import PhraseMatcher
 from supabase_client import SupabaseClient
 
-METER_WIDTH = 20
-METER_MAX = 0.15
-METER_INTERVAL = 0.5
-
 
 def load_config():
     with open("config.json") as f:
         return json.load(f)
-
-
-def _rms(audio: np.ndarray) -> float:
-    return float(np.sqrt(np.mean(np.square(audio)))) if len(audio) else 0.0
-
-
-def _meter_bar(value: float, max_value: float = METER_MAX, width: int = METER_WIDTH) -> str:
-    filled = min(int((value / max_value) * width), width)
-    return "█" * filled + "░" * (width - filled)
 
 
 def main():
@@ -50,7 +37,6 @@ def main():
     mic_buffer = []
 
     capture_mic = config.get("capture_mic", True)
-    volume_threshold = config.get("volume_threshold", 0.02)
 
     print("Phrase Counter running!")
     print(f"Tracking: {', '.join(p['name'] for p in config['phrases'])}")
@@ -63,7 +49,6 @@ def main():
 
     with AudioCapture(capture_mic=capture_mic) as capture:
         target_samples = 16000 * buffer_seconds
-        last_meter_time = 0.0
 
         try:
             while True:
@@ -74,18 +59,6 @@ def main():
                 system_chunk, mic_chunk = chunk
                 system_buffer.append(system_chunk)
                 mic_buffer.append(mic_chunk)
-
-                now = time.monotonic()
-                if now - last_meter_time >= METER_INTERVAL:
-                    last_meter_time = now
-                    system_vol = _rms(system_chunk)
-                    mic_vol = _rms(mic_chunk) if capture_mic else 0.0
-                    print(
-                        f"  [vol] System {_meter_bar(system_vol)} {system_vol:.3f}"
-                        f"  |  Mic {_meter_bar(mic_vol)} {mic_vol:.3f}"
-                        f"  (threshold ref: {volume_threshold:.3f})"
-                    )
-                    db.update_levels(system_vol, mic_vol, volume_threshold)
 
                 if sum(len(c) for c in system_buffer) >= target_samples:
                     system_data = np.concatenate(system_buffer)
