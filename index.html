@@ -163,6 +163,10 @@
         const color = heatColor(ratio);
         card.style.borderColor = color;
         card.style.boxShadow = ratio > 0 ? `0 0 ${Math.round(ratio * 24)}px ${color}66` : 'none';
+        // Translucent tint over the card's dark base, not an opaque fill —
+        // keeps white text readable at every heat level without needing
+        // per-card text-color logic.
+        card.style.backgroundColor = `color-mix(in srgb, ${color} ${Math.round(ratio * 22)}%, #1a1a1a)`;
       });
     }
 
