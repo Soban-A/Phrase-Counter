@@ -25,7 +25,6 @@ class AudioCapture:
         self.capture_mic = capture_mic
         self._system_queue = queue.Queue()
         self._mic_queue = queue.Queue()
-        self._mic_leftover = np.zeros(0, dtype=np.float32)
         self._pa = None
         self._system_stream = None
         self._mic_stream = None
@@ -107,46 +106,45 @@ class AudioCapture:
         if self._pa:
             self._pa.terminate()
 
-    def _collect_mic(self, min_samples, max_wait):
-        """Accumulate mic audio until at least min_samples are available or max_wait
-        elapses. The mic and system streams run on independent hardware clocks, so a
-        single non-blocking check can miss a mic chunk that lands a few ms late on
-        every call — waiting here avoids silently dropping mic audio."""
-        buf = self._mic_leftover
-        deadline = time.monotonic() + max_wait
-        while len(buf) < min_samples:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                break
+    def _drain(self, q):
+        """Non-blocking: pulls every chunk currently queued, or an empty array."""
+        chunks = []
+        while True:
             try:
-                buf = np.concatenate([buf, self._mic_queue.get(timeout=remaining)])
+                chunks.append(q.get_nowait())
             except queue.Empty:
                 break
+        return np.concatenate(chunks) if chunks else np.zeros(0, dtype=np.float32)
 
-        if len(buf) == 0:
-            self._mic_leftover = buf
-            return None
+    def get_chunk(self, timeout=1.0, poll_interval=0.05):
+        """Returns one mixed, mono, 16kHz float32 chunk, or None if neither source
+        produced anything within `timeout`.
 
-        self._mic_leftover = buf[min_samples:]
-        return buf[:min_samples]
-
-    def get_chunk(self, timeout=1.0):
-        """Returns one mixed, mono, 16kHz float32 chunk, or None on timeout."""
-        try:
-            system_audio = self._system_queue.get(timeout=timeout)
-        except queue.Empty:
+        System audio and the mic are drained independently — WASAPI loopback can
+        stop delivering callbacks entirely when system output is truly silent (e.g.
+        no one is talking on a call with no other sound), so waiting on system audio
+        before checking the mic would starve mic capture during exactly that case.
+        Whichever source has nothing this cycle is padded with silence instead."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            system_audio = self._drain(self._system_queue)
+            mic_audio = self._drain(self._mic_queue) if self.capture_mic else np.zeros(0, dtype=np.float32)
+            if len(system_audio) or len(mic_audio):
+                break
+            time.sleep(poll_interval)
+        else:
             return None
 
         if not self.capture_mic:
-            return system_audio
+            return system_audio if len(system_audio) else None
 
-        mic_audio = self._collect_mic(len(system_audio), max_wait=self.chunk_duration * 2)
-        if mic_audio is None:
-            return system_audio
+        n = max(len(system_audio), len(mic_audio))
+        if len(system_audio) < n:
+            system_audio = np.pad(system_audio, (0, n - len(system_audio)))
+        if len(mic_audio) < n:
+            mic_audio = np.pad(mic_audio, (0, n - len(mic_audio)))
 
-        n = min(len(system_audio), len(mic_audio))
-        mixed = system_audio[:n] + mic_audio[:n]
-        return np.clip(mixed, -1.0, 1.0)
+        return np.clip(system_audio + mic_audio, -1.0, 1.0)
 
     def __enter__(self):
         return self.start()
