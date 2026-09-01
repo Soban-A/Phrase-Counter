@@ -57,6 +57,7 @@ Listens to your system audio (and optionally your microphone) in real time, tran
    | `capture_mic` | `true` to mix your microphone in alongside system audio, `false` for system audio only |
    | `open_dashboard` | `true` to automatically open `dashboard_url` in your browser on startup |
    | `dashboard_url` | The URL of your deployed dashboard (e.g. your GitHub Pages link) — change this if you fork the repo and deploy your own copy |
+   | `volume_threshold` | Reference line (0–1 RMS) shown on the volume meters, for comparing against what's actually being heard — display-only, doesn't affect what gets transcribed |
    | `phrases` | List of `{ id, name, phrase }` entries to track — `id` must be unique and stable (it's the database key) |
 
 ## Running

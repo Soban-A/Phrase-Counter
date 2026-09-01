@@ -26,3 +26,14 @@ class SupabaseClient:
             {"id": "current", "text": text},
             on_conflict="id",
         ).execute()
+
+    def update_levels(self, system_volume: float, mic_volume: float, threshold: float) -> None:
+        self.client.table("live_levels").upsert(
+            {
+                "id": "current",
+                "system_volume": system_volume,
+                "mic_volume": mic_volume,
+                "threshold": threshold,
+            },
+            on_conflict="id",
+        ).execute()

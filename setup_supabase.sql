@@ -68,3 +68,29 @@ END $$;
 ALTER TABLE live_transcript ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read access" ON live_transcript;
 CREATE POLICY "Public read access" ON live_transcript FOR SELECT USING (true);
+
+-- 6. Live volume levels — a visual meter of what's currently being heard,
+-- plus a reference threshold marker. Display-only; doesn't affect what
+-- gets transcribed.
+CREATE TABLE IF NOT EXISTS live_levels (
+    id            TEXT PRIMARY KEY DEFAULT 'current',
+    system_volume REAL NOT NULL DEFAULT 0,
+    mic_volume    REAL NOT NULL DEFAULT 0,
+    threshold     REAL NOT NULL DEFAULT 0
+);
+
+INSERT INTO live_levels (id) VALUES ('current') ON CONFLICT (id) DO NOTHING;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'live_levels'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE live_levels;
+    END IF;
+END $$;
+
+ALTER TABLE live_levels ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read access" ON live_levels;
+CREATE POLICY "Public read access" ON live_levels FOR SELECT USING (true);
