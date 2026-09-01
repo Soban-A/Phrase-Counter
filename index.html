@@ -153,7 +153,7 @@
 
     function renderCard(p) {
       return `
-        <div class="card" id="${cardId(p.id)}">
+        <div class="card" id="${cardId(p.id)}" data-count="${p.count}">
           <div class="count">${p.count}</div>
           <div class="name">${p.name}</div>
           <div class="phrase-text">"${p.phrase}"</div>
@@ -161,18 +161,26 @@
         </div>`;
     }
 
+    function sortGrid() {
+      const cards = Array.from(grid.querySelectorAll('.card'));
+      cards.sort((a, b) => Number(b.dataset.count) - Number(a.dataset.count));
+      cards.forEach(card => grid.appendChild(card));
+    }
+
     function bumpCard(id, newData) {
       const el = document.getElementById(cardId(id));
       if (!el) return;
+      el.dataset.count = newData.count;
       el.querySelector('.count').textContent = newData.count;
       el.querySelector('.last-seen').textContent = `Last: ${timeAgo(newData.last_detected)}`;
       el.classList.remove('bump');
       void el.offsetWidth; // force reflow to restart animation
       el.classList.add('bump');
+      sortGrid();
     }
 
     async function init() {
-      const { data, error } = await client.from('phrases').select('*').order('name');
+      const { data, error } = await client.from('phrases').select('*').order('count', { ascending: false });
       if (error) {
         grid.innerHTML = `<p style="color:#f87171">Error: ${error.message}</p>`;
         return;
