@@ -1,8 +1,12 @@
 # Phrase Counter
 
-Listens to your system audio (and optionally your microphone) in real time, transcribes it locally with Whisper, and counts how many times configured phrases get said — with counts synced live to a Supabase-backed web dashboard.
+This project started as a joke because every time my best friend Hamza would join our discord calls he'd say "mic check' a few times to make sure his mic was working. I eventually caught on and started repeating after him to laugh about it and somewhere in my laughter I genuinely was curious on how many times he/we say it.
 
-## How it works
+It Listens to your system audio (and optionally your microphone) in real time, transcribes it locally with Whisper, and counts how many times configured phrases get said, with counts synced live to a Supabase-backed web dashboard. 
+
+### It's important to note that your audio is not being recorded or stored anywhere. The program listens to your audio for timed increments (6 seconds by default) and sifts through those 6 seconds for the desired phrase
+
+## File Explanation
 
 1. [audio_capture.py](audio_capture.py) captures your PC's audio output via WASAPI loopback, and optionally your default microphone, mixing both into a single mono 16kHz stream.
 2. [main.py](main.py) buffers a few seconds of audio at a time and hands it to [transcriber.py](transcriber.py), which transcribes it locally using [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (no audio leaves your machine).
