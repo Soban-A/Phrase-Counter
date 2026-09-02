@@ -1,6 +1,6 @@
 {
   "whisper_model": "small",
-  "fuzzy_threshold": 75,
+  "fuzzy_threshold": 90,
   "buffer_seconds": 5,
   "capture_mic": true,
   "open_dashboard": true,
