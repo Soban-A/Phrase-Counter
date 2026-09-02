@@ -44,7 +44,8 @@ def main():
     print(f"Listening to {source_desc}... (Ctrl+C to stop)\n")
 
     dashboard_url = config.get("dashboard_url")
-    if config.get("open_dashboard", True) and dashboard_url:
+    skip_dashboard = os.environ.get("PHRASE_COUNTER_NO_DASHBOARD") == "1"
+    if config.get("open_dashboard", True) and dashboard_url and not skip_dashboard:
         webbrowser.open(dashboard_url)
 
     with AudioCapture(capture_mic=capture_mic) as capture:

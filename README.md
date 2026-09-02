@@ -71,6 +71,14 @@ python main.py
 
 or double-click [run.bat](run.bat). On startup it syncs your `config.json` phrases into Supabase (adding new ones, updating names/text, preserving existing counts), then starts listening and printing transcripts and matches to the console.
 
+### Launch on Windows startup
+
+[run_startup.bat](run_startup.bat) sets `PHRASE_COUNTER_NO_DASHBOARD=1` before launching — this skips the automatic browser popup regardless of `open_dashboard` in `config.json`, without changing behavior for a normal manual run. To have it launch automatically:
+
+1. Open the Startup folder: press `Win+R`, run `shell:startup`.
+2. Create a shortcut to `run_startup.bat` in that folder.
+3. Right-click the shortcut → Properties → set **Run** to **Minimized**.
+
 ## Sharing the dashboard
 
 `index.html` is deployed automatically via GitHub Pages (repo → Settings → Pages → Source: "Deploy from a branch", `main` / `(root)`) — anyone with the Pages URL can open it and watch counts update live while `main.py` is running on your machine. It only reads (via a Supabase RLS policy restricted to `SELECT`), so it's safe to share the link.
