@@ -1,7 +1,7 @@
 {
   "whisper_model": "small",
   "fuzzy_threshold": 75,
-  "buffer_seconds": 3,
+  "buffer_seconds": 5,
   "capture_mic": true,
   "open_dashboard": true,
   "dashboard_url": "https://soban-a.github.io/Phrase-Counter/",
@@ -29,6 +29,12 @@
 		"name": "Hashtag",
 		"phrase": "hashtag",
 		"description": "a great bit from Aaron #WhatThatMean?"
+	},
+	{
+		"id": "baby_food",
+		"name": "Baby Food",
+		"phrase": "baby food",
+		"description": "'that was easy' but Hamza's version"
 	}
   ]
 }
